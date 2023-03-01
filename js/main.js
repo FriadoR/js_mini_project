@@ -6,13 +6,19 @@ let myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
   keyboard: false,
 });
 
+// list option
+let options = {
+  valueNames: ["name", "price"],
+};
+let userList;
+
 // items to basket
 document
   .querySelector("button.add_new")
   .addEventListener("click", function (e) {
     let name = document.getElementById("good_name").value;
     let price = document.getElementById("good_price").value;
-    let count = document.getElementById("good_count").value;
+    let count = +document.getElementById("good_count").value;
 
     if (name && price && count) {
       document.getElementById("good_name").value = "";
@@ -33,14 +39,12 @@ document
     }
   });
 
-// func to reload view
-
 update_goods();
 
 function update_goods() {
   let result_price = 0;
   let tbody = document.querySelector(".list");
-  tbody.innerHtml = "";
+  tbody.innerHTML = "";
   document.querySelector(".cart").innerHTML = "";
   let goods = JSON.parse(localStorage.getItem("goods"));
 
@@ -54,8 +58,8 @@ function update_goods() {
         `
           <tr class = "align-middle">
           <td> ${i + 1} </td>
-          <td class = "name">${goods[i][1]} </td>
-          <td class = "price">${goods[i][2]} </td>
+          <td class = "name"> ${goods[i][1]} </td>
+          <td class = "price"> ${goods[i][2]} </td>
           <td> ${goods[i][3]} </td>
           <td><button type = "button" class = "good_delete btn btn-danger" data-delete = "${
             goods[i][0]
@@ -77,14 +81,14 @@ function update_goods() {
           `
           <tr class = "align-middle">
           <td> ${i + 1} </td>
-          <td class = "price_name">${goods[i][1]} </td>
-          <td class = "price_one">${goods[i][2]} </td>
+          <td class = "price_name"> ${goods[i][1]} </td>
+          <td class = "price_one"> ${goods[i][2]} </td>
           <td class = "price_count"> ${goods[i][4]} </td>
           <td class = "price_discount"><input data-goodid = "${
             goods[i][0]
           }" type = "text" value = "${goods[i][5]}" min = "0" max = "100"></td>
           <td>${goods[i][6]}</td>
-          <td><button type = "button" class = "good_delete btn btn-danger" data-delete = "${
+          <td><button class = "good_delete btn btn-danger" data-delete = "${
             goods[i][0]
           }">&#10006;</button></td>
           </tr>
@@ -92,10 +96,39 @@ function update_goods() {
         );
       }
     }
-    // userList = new List('goods', options);
+    userList = new List("goods", options);
   } else {
     table1.hidden = true;
     table2.hidden = true;
   }
   document.querySelector(".price_result").innerHTML = result_price + " &#8381;";
 }
+
+// delete item
+document.querySelector(".list").addEventListener("click", function (e) {
+  if (!e.target.dataset.delete) {
+    return;
+  }
+  Swal.fire({
+    title: "Внимание!",
+    text: "Вы действительно хотите удалить данный товар?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Да",
+    cancelButtonText: "Отмена",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      let goods = JSON.parse(localStorage.getItem("goods"));
+      for (let i = 0; i < goods.length; i++) {
+        if (goods[i][0] == e.target.dataset.delete) {
+          goods.splice(i, 1);
+          localStorage.setItem("goods", JSON.stringify(goods));
+          update_goods();
+        }
+      }
+      Swal.fire("Удалено!", "Выбранный товар был успешно удален.", "success");
+    }
+  });
+});
