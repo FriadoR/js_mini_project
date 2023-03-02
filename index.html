@@ -37,7 +37,9 @@
                     <th></th>
                   </tr>
                 </thead>
-                <tbody class="list"></tbody>
+                <tbody class="list">
+                  <!-- Список товаров -->
+                </tbody>
               </table>
             </div>
           </div>
@@ -62,7 +64,9 @@
                     <th></th>
                   </tr>
                 </thead>
-                <tbody class="cart"></tbody>
+                <tbody class="cart">
+                  <!-- Список товаров в корзине -->
+                </tbody>
               </table>
             </div>
           </div>
@@ -82,6 +86,7 @@
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Добавить товар</h5>
             <button
+              type="button"
               class="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
@@ -96,10 +101,10 @@
               maxlength="40"
             />
             <label for="good_price" class="form-label">Цена</label>
-            <input type="text" class="form-control mb-3" id="good_price" />
+            <input type="number" class="form-control mb-3" id="good_price" />
             <label for="good_count" class="form-label">Количество</label>
             <input
-              type="text"
+              type="number"
               class="form-control mb-3"
               id="good_count"
               min="1"

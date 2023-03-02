@@ -1,7 +1,45 @@
+// sort left table
+table1.onclick = function (e) {
+  if (e.target.tagName != "TH") return;
+  let th = e.target;
+  sortTable(th.cellIndex, th.dataset.type, "table1");
+};
+// sort right table
+table2.onclick = function (e) {
+  if (e.target.tagName != "TH") return;
+  let th = e.target;
+  sortTable(th.cellIndex, th.dataset.type, "table2");
+};
+
+function sortTable(colNum, type, id) {
+  let elem = document.getElementById(id);
+  let tbody = elem.querySelector("tbody");
+  let rowsArray = Array.from(tbody.rows);
+  let compare;
+
+  switch (type) {
+    case "number":
+      compare = function (rowA, rowB) {
+        return rowA.cells[colNum].innerHTML - rowB.cells[colNum].innerHTML;
+      };
+      break;
+    case "string":
+      compare = function (rowA, rowB) {
+        return rowA.cells[colNum].innerHTML > rowB.cells[colNum].innerHTML
+          ? 1
+          : -1;
+      };
+      break;
+  }
+  rowsArray.sort(compare);
+  tbody.append(...rowsArray);
+}
+
+// find items goods
 if (!localStorage.getItem("goods")) {
   localStorage.setItem("goods", JSON.stringify([]));
 }
-
+// add new item + modal window
 let myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
   keyboard: false,
 });
@@ -12,7 +50,7 @@ let options = {
 };
 let userList;
 
-// items to basket
+// add items to localStorage
 document
   .querySelector("button.add_new")
   .addEventListener("click", function (e) {
@@ -39,6 +77,7 @@ document
     }
   });
 
+// update view list items
 update_goods();
 
 function update_goods() {
@@ -71,9 +110,11 @@ function update_goods() {
         `
       );
       if (goods[i][4] > 0) {
+        // price with discount
         goods[i][6] =
           goods[i][4] * goods[i][2] -
           goods[i][4] * goods[i][2] * goods[i][5] * 0.01;
+        // finish sum
         result_price += goods[i][6];
 
         document.querySelector(".cart").insertAdjacentHTML(
@@ -88,7 +129,7 @@ function update_goods() {
             goods[i][0]
           }" type = "text" value = "${goods[i][5]}" min = "0" max = "100"></td>
           <td>${goods[i][6]}</td>
-          <td><button class = "good_delete btn btn-danger" data-delete = "${
+          <td><button type = "button" class = "good_delete btn btn-danger" data-delete = "${
             goods[i][0]
           }">&#10006;</button></td>
           </tr>
@@ -101,6 +142,8 @@ function update_goods() {
     table1.hidden = true;
     table2.hidden = true;
   }
+
+  // add price to "Итого"
   document.querySelector(".price_result").innerHTML = result_price + " &#8381;";
 }
 
@@ -123,7 +166,7 @@ document.querySelector(".list").addEventListener("click", function (e) {
       let goods = JSON.parse(localStorage.getItem("goods"));
       for (let i = 0; i < goods.length; i++) {
         if (goods[i][0] == e.target.dataset.delete) {
-          goods.splice(i, 1);
+          goods.splice(i, 1); // delete one item
           localStorage.setItem("goods", JSON.stringify(goods));
           update_goods();
         }
@@ -131,4 +174,61 @@ document.querySelector(".list").addEventListener("click", function (e) {
       Swal.fire("Удалено!", "Выбранный товар был успешно удален.", "success");
     }
   });
+});
+
+// add to basket
+document.querySelector(".list").addEventListener("click", function (e) {
+  if (!e.target.dataset.goods) {
+    return;
+  }
+  let goods = JSON.parse(localStorage.getItem("goods"));
+  for (let i = 0; i < goods.length; i++) {
+    if (goods[i][3] > 0 && goods[i][0] == e.target.dataset.goods) {
+      goods[i].splice(3, 1, goods[i][3] - 1);
+      goods[i].splice(4, 1, goods[i][4] + 1);
+      localStorage.setItem("goods", JSON.stringify(goods));
+      update_goods();
+    }
+  }
+});
+// delete 1 item in basket
+document.querySelector(".cart").addEventListener("click", function (e) {
+  if (!e.target.dataset.delete) {
+    return;
+  }
+  let goods = JSON.parse(localStorage.getItem("goods"));
+  for (let i = 0; i < goods.length; i++) {
+    if (goods[i][4] > 0 && goods[i][0] == e.target.dataset.delete) {
+      goods[i].splice(3, 1, goods[i][3] + 1);
+      goods[i].splice(4, 1, goods[i][4] - 1);
+      localStorage.setItem("goods", JSON.stringify(goods));
+      update_goods();
+    }
+  }
+  Swal.fire("Удалено!", "Выбранный товар был успешно удален.", "success");
+});
+// change discount value
+document.querySelector(".cart").addEventListener("input", function (e) {
+  if (!e.target.dataset.goodid) {
+    return;
+  }
+  let goods = JSON.parse(localStorage.getItem("goods"));
+  for (let i = 0; i < goods.length; i++) {
+    if (goods[i][0] == e.target.dataset.goodid) {
+      // discount
+      goods[i][5] = e.target.value;
+      // price with discount
+      goods[i][6] =
+        goods[i][4] * goods[i][2] -
+        goods[i][4] * goods[i][2] * goods[i][5] * 0.01;
+      localStorage.setItem("goods", JSON.stringify(goods));
+      update_goods();
+
+      // Поставить фокус в поле скидки и передвинуть курсор в конец
+      // Set focus to the discount field and move the cursor to the end
+      let input = document.querySelector(`[data-goodid="${goods[i][0]}"]`);
+      input.focus();
+      input.selectionStart = input.value.length;
+    }
+  }
 });
