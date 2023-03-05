@@ -1,3 +1,3 @@
 ## Magazine mini project. 
 
-### (HTML5 | bootstrap5 | List.js | javascript | sweetalert2.js)
+### HTML5 | bootstrap5 | list.js | javascript | sweetalert2.js
